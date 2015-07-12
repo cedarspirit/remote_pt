@@ -1,0 +1,80 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <style>
+      body { margin: 0px; padding: 0px; }
+      canvas { border: 1px solid #9C9898; }
+
+
+
+
+    </style>
+    <script src="http://d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v4.6.0.min.js"></script>
+    <script src="http://code.jquery.com/jquery-2.0.0.js"></script>
+    <script type="text/javascript" src="/static/RGraph.common.core.js" ></script>
+    <script type="text/javascript" src="/static/RGraph.thermometer.js" ></script>
+    <script src="/static/jquery.fittext.js"></script>
+    <script>
+ 
+      var socket = new WebSocket("ws://192.168.31.130:8080/wsCHAT");
+ 
+      socket.onopen = function(){  
+        console.log("connected"); 
+      }; 
+ 
+      socket.onmessage = function (message) {
+        console.log("receiving: " + message.data);
+      };
+ 
+      socket.onclose = function(){
+        console.log("disconnected"); 
+      };
+ 
+      sendMessage = function(message) {
+        socket.send(message);
+      };
+ 
+      var value = 0;
+ 
+      window.onload = function() {
+        var stage = new Kinetic.Stage({
+          container: "container",
+          width: 610,
+          height: 400
+        });
+ 
+        var layer  = new Kinetic.Layer();
+ 
+        var circle = new Kinetic.Circle({
+          x: 100,
+          y: 100,
+          radius: 10,
+          fill: "red",
+          stroke: "black",
+          strokeWidth: 4,
+          draggable: true
+        });
+
+        circle.on('mouseup', function() {
+          var mousePos = stage.getPointerPosition();
+          var x = mousePos.x - 190;
+          var y = mousePos.y - 40;
+          sendMessage("{value:" +  mousePos.y + "}");;
+        });
+
+        circle.on("mousedown", function() {
+          value = value + 20;
+          console.log('sending: ' + value);
+          sendMessage("{value:" + value + "}");
+        });
+ 
+        layer.add(circle);
+        stage.add(layer);
+      };
+ 
+    </script>
+  </head>
+  <body>
+    <div id="container"></div>
+  </body>
+</html>
