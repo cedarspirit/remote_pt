@@ -70,7 +70,7 @@ def make_websocket_connection(host, port):
     LastTick = 0
     curMode = 0
 
-    url = "ws://%s:%d/wsCHAT" % (host, port)
+    url = "ws://%s:%d/ws" % (host, port)
     print "++++ CONNECTING TO +++" + url
     try:
         ws = yield tornado.websocket.websocket_connect(url)

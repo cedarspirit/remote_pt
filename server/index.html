@@ -15,15 +15,30 @@
     <script type="text/javascript" src="/static/RGraph.thermometer.js" ></script>
     <script src="/static/jquery.fittext.js"></script>
     <script>
- 
-      var socket = new WebSocket("ws://192.168.31.130:8080/wsCHAT");
+
+      var circle;
+      var layer;
+
+      var socket = new WebSocket("ws://192.168.31.130:8080/ws");
  
       socket.onopen = function(){  
         console.log("connected"); 
       }; 
  
       socket.onmessage = function (message) {
-        console.log("receiving: " + message.data);
+        console.log("receivingZZZZZZZZZZ: " + message.data);
+        if (isNumeric(message.data)) {
+          var x = parseInt(message.data, 10);
+          var cXY = circle.getPosition();
+             console.log("receivingZZZZZZZZZZ: New X " + x + " Circle X: " + cXY.x );
+          circle.move(x - cXY.x, 0);
+          layer.draw();
+        }
+        else
+          {
+            console.log("NOT XXXX");
+          }
+
       };
  
       socket.onclose = function(){
@@ -42,10 +57,13 @@
           width: 610,
           height: 400
         });
+
+
+
+
+        layer  = new Kinetic.Layer();
  
-        var layer  = new Kinetic.Layer();
- 
-        var circle = new Kinetic.Circle({
+        circle = new Kinetic.Circle({
           x: 100,
           y: 100,
           radius: 10,
@@ -55,12 +73,7 @@
           draggable: true
         });
 
-        circle.on('mouseup', function() {
-          var mousePos = stage.getPointerPosition();
-          var x = mousePos.x - 190;
-          var y = mousePos.y - 40;
-          sendMessage("{value:" +  mousePos.y + "}");;
-        });
+
 
         circle.on("mousedown", function() {
           value = value + 20;
@@ -70,8 +83,32 @@
  
         layer.add(circle);
         stage.add(layer);
+
+        enableStageClick();
+
+        function enableStageClick() {
+            $(stage.getContent()).on('click', function (event) {
+                var pos = stage.getMousePosition();
+                var mouseX = parseInt(pos.x);
+                var mouseY = parseInt(pos.y);
+                var cXY = circle.getPosition();
+                sendMessage("{value:" + mouseX + "}");
+                circle.move(mouseX - cXY.x , mouseY - cXY.y);
+                layer.draw();
+                //var hit = rect1.hit(mouseX, mouseY) ? "You clicked inside rect" : "You clicked outside rect";
+                //$("#hit").text(hit);
+            });
+        }
+
+
       };
- 
+
+      function isNumeric(n) {
+         return !isNaN(parseFloat(n)) && isFinite(n);
+          }
+
+
+
     </script>
   </head>
   <body>

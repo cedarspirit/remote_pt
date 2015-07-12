@@ -23,17 +23,35 @@ class IndexHandler(tornado.web.RequestHandler):
         self.render('index.html')
  
 class WSHandler(tornado.websocket.WebSocketHandler):
+    def check_origin(self, origin):
+        return True
+
     def open(self):
         print 'new connection'
         clients.append(self)
         self.write_message("connected")
- 
+
     def on_message(self, message):
-        print 'tornado received from client: %s' % message
-        self.write_message('got it!')
-        q = self.application.settings.get('queue')
-        q.put(message)
- 
+        print 'tornado received from UI controller: %s' % message
+
+        try:
+            cm = json.loads(message)
+
+            if cm['id']=='C0': #Hello
+                print 'rcvd Hello Message'
+                self.write_message(json.dumps({'id': 'S0'}))
+            elif cm['id']=='C1': #PT Data
+                print 'rcvd PT Message : x=' + cm['x'] + ' y=' + cm['y']
+                self.write_message('got it! ' + cm['id'])
+                q = self.application.settings.get('queue')
+               # q.put(message)
+                q.put("<A1_" + cm['x']  +'_' + cm['y'] + "_>\n")
+
+        except:
+            print 'invalid JSON message'
+
+
+
     def on_close(self):
         print 'connection closed'
         clients.remove(self)
@@ -48,18 +66,25 @@ class WSH(tornado.websocket.WebSocketHandler):
         self.write_message("connected")
 
     def on_message(self, message):
-        print 'tornado received from client: %s' % message
-        cm = json.loads(message)
+        print 'tornado received from web APP: %s' % message
 
-        if cm['id']=='C0': #Hello
-            print 'rcvd Hello Message'
-            self.write_message(json.dumps({'id': 'S0'}))
-        elif cm['id']=='C1': #PT Data
-            print 'rcvd PT Message : x=' + cm['x'] + ' y=' + cm['y']
-            self.write_message('got it! ' + cm['id'])
-            q = self.application.settings.get('queue')
-           # q.put(message)
-            q.put("<A1_" + cm['x']  +'_' + cm['y'] + "_>\n")
+        try:
+            cm = json.loads(message)
+
+            if cm['id']=='C0': #Hello
+                print 'rcvd Hello Message'
+                self.write_message(json.dumps({'id': 'S0'}))
+            elif cm['id']=='C1': #PT Data
+                print 'rcvd PT Message : x=' + cm['x'] + ' y=' + cm['y']
+                self.write_message('got it! ' + cm['id'])
+                q = self.application.settings.get('queue')
+               # q.put(message)
+                q.put("<A1_" + cm['x']  +'_' + cm['y'] + "_>\n")
+
+        except:
+            print 'invalid JSON message'
+
+
 
     def on_close(self):
         print 'connection closed'
