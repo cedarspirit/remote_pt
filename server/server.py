@@ -46,7 +46,10 @@ class WSHandler(tornado.websocket.WebSocketHandler):
                 q = self.application.settings.get('queue')
                # q.put(message)
                 q.put("<A1_" + cm['x']  +'_' + cm['y'] + "_>\n")
-
+            if cm['id']=='D1': #Hello
+                send2all (json.dumps({'id': 'Z3'}))
+                print '======================================'
+                #self.write_message(json.dumps({'id': 'S0'}))
         except:
             print 'invalid JSON message'
 
@@ -80,6 +83,10 @@ class WSH(tornado.websocket.WebSocketHandler):
                 q = self.application.settings.get('queue')
                # q.put(message)
                 q.put("<A1_" + cm['x']  +'_' + cm['y'] + "_>\n")
+            if cm['id']=='D1': #Hello
+                send2all (json.dumps({'id': 'D2','x': cm['x'],'y':cm['y']}))
+                print '======================================'
+                #self.write_message(json.dumps({'id': 'S0'}))
 
         except:
             print 'invalid JSON message'
@@ -90,6 +97,10 @@ class WSH(tornado.websocket.WebSocketHandler):
         print 'connection closed'
         clients.remove(self)
 
+
+def send2all(jsonmsg):
+    for c in clients:
+        c.write_message(jsonmsg)
 ################################ MAIN ################################
  
 def main():
@@ -118,13 +129,28 @@ def main():
     httpServer.listen(options.port)
     print "Listening on port:", options.port
     #tornado.ioloop.IOLoop.instance().start()
- 
+
+
+
     def checkResults():
         if not resultQ.empty():
             result = resultQ.get()
             print "tornado received from arduino: " + result
-            for c in clients:
-                c.write_message(result)
+
+            if (result[:1] == '<'):
+                em = result.split('_')
+                if (em[0]=='<T1'):
+                    send2all (json.dumps({'id': 'T2','T':em[1],'H':em[2]}))
+
+            else:
+                print( "NOT PROPER")
+
+
+
+
+
+           # for c in clients:
+           #     c.write_message(result)
  
     mainLoop = tornado.ioloop.IOLoop.instance()
     scheduler = tornado.ioloop.PeriodicCallback(checkResults, 10, io_loop = mainLoop)

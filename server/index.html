@@ -36,7 +36,20 @@
         }
         else
           {
-            console.log("NOT XXXX");
+            try {
+               var js = JSON.parse(message.data);
+                if (js.id == 'T2')
+                {
+                    console.log("TEMPAREATURE ---> " + js.T + " HUMIDITY: " + js.H  );
+                }
+                else
+                    console.log("NOT XXXX " + js.id   );
+            }
+            catch(err){
+              console.log("NOT XXXX " + err.message);
+            }
+
+
           }
 
       };
@@ -92,7 +105,16 @@
                 var mouseX = parseInt(pos.x);
                 var mouseY = parseInt(pos.y);
                 var cXY = circle.getPosition();
-                sendMessage("{value:" + mouseX + "}");
+
+
+                var HitObject = {
+                      "id": "D1",
+                      "x": mouseX,
+                      "y": mouseY
+                };
+                var HitString = JSON.stringify(HitObject);
+
+                sendMessage(HitString);
                 circle.move(mouseX - cXY.x , mouseY - cXY.y);
                 layer.draw();
                 //var hit = rect1.hit(mouseX, mouseY) ? "You clicked inside rect" : "You clicked outside rect";

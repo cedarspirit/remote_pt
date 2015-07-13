@@ -72,6 +72,14 @@ void readtemp()
   float hif = dht.computeHeatIndex(f, h);
   // Compute heat index in Celsius (isFahreheit = false)
   float hic = dht.computeHeatIndex(t, h, false);
+
+Serial.print("<T1_");
+Serial.print(t);
+Serial.print("_");
+Serial.print(h);
+Serial.println("_>");
+
+/*
   Serial.print("Humidity: ");
   Serial.print(h);
   Serial.print(" %\t");
@@ -85,7 +93,7 @@ void readtemp()
   Serial.print(" *C ");
   Serial.print(hif);
   Serial.println(" *F");
-    
+*/
   }
 }
 
