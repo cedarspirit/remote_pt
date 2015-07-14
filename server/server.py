@@ -42,12 +42,13 @@ class WSHandler(tornado.websocket.WebSocketHandler):
                 self.write_message(json.dumps({'id': 'S0'}))
             elif cm['id']=='C1': #PT Data
                 print 'rcvd PT Message : x=' + cm['x'] + ' y=' + cm['y']
-                self.write_message('got it! ' + cm['id'])
+                #self.write_message('got it! ' + cm['id'])
                 q = self.application.settings.get('queue')
-               # q.put(message)
                 q.put("<A1_" + cm['x']  +'_' + cm['y'] + "_>\n")
+                send2all (json.dumps({'id': 'Z3','x':cm['x'],'y':cm['y']}))
+
             if cm['id']=='D1': #Hello
-                send2all (json.dumps({'id': 'Z3'}))
+                send2all (json.dumps({'id': 'Z3','x':cm['x'],'y':cm['y']}))
                 print '======================================'
                 #self.write_message(json.dumps({'id': 'S0'}))
         except:
