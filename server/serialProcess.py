@@ -8,7 +8,7 @@ class SerialProcess(multiprocessing.Process):
         multiprocessing.Process.__init__(self)
         self.taskQ = taskQ
         self.resultQ = resultQ
-        self.usbPort =  '/dev/ttyUSB0' # '/dev/ttyACM0'
+        self.usbPort =  '/dev/ttyACM0' #'/dev/ttyUSB0' # '/dev/ttyACM0'
         self.sp = serial.Serial(self.usbPort, 9600, timeout=1)
 
     def close(self):

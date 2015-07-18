@@ -49,7 +49,8 @@ class WSHandler(tornado.websocket.WebSocketHandler):
                 print 'rcvd PT Message : x=' + cm['x'] + ' y=' + cm['y']
                 #self.write_message('got it! ' + cm['id'])
                 q = self.application.settings.get('queue')
-                q.put("<A1_" + cm['x']  +'_' + cm['y'] + "_>\n")
+                ###q.put("<A1_" + cm['x']  +'_' + cm['y'] + "_>\n")
+                q.put("<A1_" + str(int(cm['x']) * 4 ) +'_' + cm['y'] + "_>\n")
                 #send2all (json.dumps({'id': 'Z3','x':str(int(cm['x']) * XFACT),'y':str(int(cm['y']) * YFACT)  }))
                 send2all (json.dumps({'id': 'Z3','x':unicode(str(int(cm['x']) * XFACT), "utf-8"),'y':unicode(str(int(cm['y']) * YFACT), "utf-8")  }))
 
@@ -150,7 +151,7 @@ def main():
                     send2all (json.dumps({'id': 'T2','T':em[1],'H':em[2]}))
 
             else:
-                print( "NOT PROPER")
+                print( "NOT PROPER " + result )
 
 
 

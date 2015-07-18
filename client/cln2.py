@@ -161,7 +161,7 @@ def main():
     taskQ = multiprocessing.Queue()
     comRcvQ = multiprocessing.Queue()
 
-    sp = serialHandler.SerialProcess('/dev/ttyUSB1',taskQ, comRcvQ)
+    sp = serialHandler.SerialProcess('/dev/ttyUSB0',taskQ, comRcvQ)
     sp.daemon = True
     sp.start()
 
