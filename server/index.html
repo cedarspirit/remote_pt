@@ -4,6 +4,7 @@
       <head>
         <title>{% block title %}Default title{% end %}</title>
       </head>
+    <link rel="stylesheet" type="text/css" href="/static/theme.css">
     <style>
       body { margin: 0px; padding: 0px; }
       canvas { border: 1px solid #9C9898; }
@@ -22,17 +23,61 @@
   </head>
   <body>
 
-    <h1>WebSockets with Python & Tornado</h1>
-    <div id="log" style="overflow:scroll;width:500px; height:200px;background-color:#ffeeaa; margin:auto; text-align:left">Messages go here</div>
+
+<div class="super_block">
+
+    <div class="topinfo">
+        <h2>Environment Control</h2>
+        <label id="conn_text"></label><br />
+    </div>
+
+
+
+
+    <div class="temp_block">
+
+            <div class="temp_panel">
+                <div id="temp_text">
+                    <label class="temp_label" id="temp1_label">HOME</label><br />
+                    <label class="temp_value" id="temp1_value"></label><br />
+                </div>
+                <div class="temp_bar" >
+                    <canvas id="cvs_E"  width="100" height="200">[No canvas support]</canvas>
+                </div>
+            </div>
+
+
+
+
+
+        <div  class="temp_panel" margin-left="0px" id="box2">
+            <div id="temp_text">
+                <label class="temp_label" id="temp2_label">CPU</label><br />
+                <label class="temp_value" id="temp2_value"></label><br />
+            </div>
+            <div class="temp_bar" >
+                <canvas id="cvs_CPU" width="100" height="200">[No canvas support]</canvas>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+</div>
+
+
+
+
 
     <div style="margin:10px">
       <input type="text" id="msg" style="background:#fff;width:200px"/>
       <input type="button" id="thebutton" value="Send" />
     </div>
 
-    <a href="http://lowpowerlab.com/blog/2013/01/17/raspberrypi-websockets-with-python-tornado/">www.LowPowerLab.com</a>
 
 
-    <div id="container"></div>
+    <div id="container" class="mystage" ></div>
   </body>
 </html>

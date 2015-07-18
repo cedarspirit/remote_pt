@@ -12,10 +12,15 @@ import multiprocessing
 import serialProcess
  
 define("port", default=8080, help="run on the given port", type=int)
- 
+
+
 clients = []
 taskQ = multiprocessing.Queue()
 resultQ = multiprocessing.Queue()
+
+XFACT = 600.00/1020.00
+YFACT = 400.00/1020.00
+
 
 
 class IndexHandler(tornado.web.RequestHandler):
@@ -45,7 +50,8 @@ class WSHandler(tornado.websocket.WebSocketHandler):
                 #self.write_message('got it! ' + cm['id'])
                 q = self.application.settings.get('queue')
                 q.put("<A1_" + cm['x']  +'_' + cm['y'] + "_>\n")
-                send2all (json.dumps({'id': 'Z3','x':cm['x'],'y':cm['y']}))
+                #send2all (json.dumps({'id': 'Z3','x':str(int(cm['x']) * XFACT),'y':str(int(cm['y']) * YFACT)  }))
+                send2all (json.dumps({'id': 'Z3','x':unicode(str(int(cm['x']) * XFACT), "utf-8"),'y':unicode(str(int(cm['y']) * YFACT), "utf-8")  }))
 
             if cm['id']=='D1': #Hello
                 send2all (json.dumps({'id': 'Z3','x':cm['x'],'y':cm['y']}))

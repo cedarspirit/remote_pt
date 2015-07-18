@@ -62,7 +62,7 @@
       window.onload = function() {
         var stage = new Kinetic.Stage({
           container: "container",
-          width: 610,
+          width: 600,
           height: 400
         });
 
@@ -135,7 +135,34 @@
           var sec = now.getSeconds();
           var min = now.getMinutes();
           var hr = now.getHours();
-          $("#log").html($("#log").html() + "<br/>" + hr + ":" + min + ":" + sec + " ___ " +  msg);
+        //  $("#log").html($("#log").html() + "<br/>" + hr + ":" + min + ":" + sec + " ___ " +  msg);
+
+            ShowTemp(msg,msg);
           //$("#log").animate({ scrollTop: $('#log')[0].scrollHeight}, 100);
-          $('#log').scrollTop($('#log')[0].scrollHeight);
+        //  $('#log').scrollTop($('#log')[0].scrollHeight);
         }
+
+
+  function ShowTemp(temp1,temp2)
+	{
+      var ds18b20_reading = document.getElementById('temp1_value');
+      var cpu_reading = document.getElementById('temp2_value');
+      ds18b20_reading.innerHTML = parseFloat(temp1).toFixed(2);
+      cpu_reading.innerHTML = parseFloat(temp2).toFixed(2);
+      drawGraph_environment(temp1);
+      drawGraph_CPU(temp2);
+	}
+
+  function drawGraph_environment(temp1){
+    var canvas = document.getElementById('cvs_E');
+    RGraph.Clear(canvas);
+
+    var thermometer = new RGraph.Thermometer('cvs_E', 0,60,     eval(temp1))
+    .set('title.side', 'Environment')
+    .set('value.label', false)
+    .set('scale.visible', true)
+    .set('scale.decimals',2)
+    .set('gutter.left', 25)
+    .set('gutter.right', 40)
+    .draw();
+  }
