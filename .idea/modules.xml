@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../tornado1/auth/.idea/auth.iml" filepath="$PROJECT_DIR$/../tornado1/auth/.idea/auth.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/remote_pt.iml" filepath="$PROJECT_DIR$/.idea/remote_pt.iml" />
     </modules>
   </component>
