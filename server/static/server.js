@@ -5,8 +5,8 @@
 
       var circle;
       var layer;
-
-      var socket = new WebSocket("ws://192.168.31.130:8080/ws");
+      var myIp = "192.168.31.134:8080";
+      var socket = new WebSocket("ws://" + myIp +"/ws");
 
       socket.onopen = function(){
         console.log("connected");
@@ -166,3 +166,8 @@
     .set('gutter.right', 40)
     .draw();
   }
+
+    function get_ip(val){
+        myIp=val;
+
+    }

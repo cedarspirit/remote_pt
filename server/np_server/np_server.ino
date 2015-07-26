@@ -23,6 +23,9 @@ AccelStepper stepper1(HALFSTEP, motorPin1, motorPin3, motorPin2, motorPin4);
 AccelStepper stepper2(HALFSTEP, motor2Pin1, motor2Pin3, motor2Pin2, motor2Pin4);
 const int ledPin =  13;      // the number of the LED pin
 int ledState = LOW;    
+
+int opMode = 0;
+
 String inputString = "";         // a string to hold incoming data
 boolean stringComplete = false;  // whether the string is complete
 long interval = 1000;  
@@ -31,6 +34,7 @@ unsigned long currentMillis=0;
 unsigned long previousMillisT = 0;
 DHT dht(DHTPIN, DHTTYPE);
 void setup() {
+  opMode = 0;
   // initialize serial:
   stepper1.setMaxSpeed(1000);    // 1000 coz....greater than 1000 is unreliable .....as told on the info page
   stepper1.setAcceleration(1000);
@@ -45,9 +49,9 @@ void setup() {
   previousMillis = millis();
   previousMillisT = millis();
   interval=250;  
-  Serial.begin(9600);
+
   // reserve 200 bytes for the inputString:
-  inputString.reserve(200);
+  inputString.reserve(600);
 
   // Setup the button with an internal pull-up :
   pinMode(STOP_PIN,INPUT_PULLUP);
@@ -59,17 +63,22 @@ void setup() {
   //Setup the LED :
   pinMode(LED_PIN,OUTPUT);
 
-
+  Serial.begin(9600);
+  
 }
 
 void loop() {
   
   currentMillis = millis();
-  serialEvent(); //call the function
+  
+  if(Serial.available() > 0)  //because serialEvent does not workk with Leonardo
+      serialEvent();   
+
   // print the string when a newline arrives:
   if (stringComplete) {
        if (inputString.startsWith("<A1_"))
           {
+            opMode=1;
             int p1 = inputString.indexOf('_', 4);
             int p2 = inputString.indexOf('_', p1+1);
             int x = inputString.substring(4,p1).toInt();
@@ -133,6 +142,10 @@ if (stepper2.distanceToGo() == 0)
 
 void readtemp()
 {
+
+  if (opMode == 0)
+    return;
+  
   if(currentMillis - previousMillisT > 2000) {
     // save the last time you blinked the LED
     previousMillisT = currentMillis;  
@@ -155,11 +168,11 @@ void readtemp()
   // Compute heat index in Celsius (isFahreheit = false)
   float hic = dht.computeHeatIndex(t, h, false);
 
-Serial.print("<T1_");
-Serial.print(t);
-Serial.print("_");
-Serial.print(h);
-Serial.println("_>");
+  Serial.print("<T1_");
+  Serial.print(t);
+  Serial.print("_");
+  Serial.print(h);
+  Serial.println("_T1>");
 
 /*
   Serial.print("Humidity: ");

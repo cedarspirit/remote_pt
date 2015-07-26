@@ -205,7 +205,7 @@ def main():
         global rxBuffer
         if not comRcvQ.empty():
             result = rxBuffer + comRcvQ.get()
-#             print "tornado received from arduino: " + result
+            #print "tornado received from arduino: " + result
 
             rx = result.split('\r\n' )
             rxBuffer = rx[-1]

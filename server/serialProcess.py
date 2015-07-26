@@ -31,11 +31,13 @@ class SerialProcess(multiprocessing.Process):
 
                 # send it to the arduino
                 self.sp.write(task + "\n");
-                print "arduino received from tornado: " + task
+                print "Serial Worker Xmit : " + task
 
             # look for incoming serial data
             if (self.sp.inWaiting() > 0):
-            	result = self.sp.readline().replace("\n", "")
-
+                result = self.sp.readline()
+                #print "Serial Worker Received : " + result
+            	result = result.replace("\n", "")
+                print "Serial Worker Received2 : " + result
                 # send it back to tornado
             	self.resultQ.put(result)
