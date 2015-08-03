@@ -11,12 +11,13 @@ from tornado.options import define, options
 import Settings
 import time
 import multiprocessing
-import serialProcess
+import serialProcess as d_ser
 import mod_users as users
 import mod_db as db
-
+import datetime
+import sys, traceback
 import rrdtool
-
+import mod_pubvars as m
 
 databaseFile = "temp1.rrd"
 MIN_TEMP = -50
@@ -33,6 +34,8 @@ taskQ = multiprocessing.Queue()
 
 XFACT = 600.00/1020.00
 YFACT = 400.00/1020.00
+
+last_valid_ser =datetime.datetime.now()
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
@@ -68,7 +71,9 @@ class WSHandler(tornado.websocket.WebSocketHandler):
                 #self.write_message('got it! ' + cm['id'])
                 q = self.application.settings.get('queueZ')
                 ###q.put("<A1_" + cm['x']  +'_' + cm['y'] + "_>\n")
+
                 q.put("<A1_" + str(int(cm['x']) * 4 ) +'_' + cm['y'] + "_>\n")
+                print 'rcvd PT Message : x=' + cm['x'] + ' y=' + cm['y']
                 #send2all (json.dumps({'id': 'Z3','x':str(int(cm['x']) * XFACT),'y':str(int(cm['y']) * YFACT)  }))
                 send2all (json.dumps({'id': 'Z3','x':unicode(str(int(cm['x']) * XFACT), "utf-8"),'y':unicode(str(int(cm['y']) * YFACT), "utf-8")  }))
 
@@ -198,6 +203,7 @@ def read_all(val):
 def main():
 
 
+
     #taskQ = multiprocessing.Queue()
     resultQ = multiprocessing.Queue()
 
@@ -207,22 +213,50 @@ def main():
  
     tornado.options.parse_command_line()
 
+    #if this gives address already in use -> http://stackoverflow.com/questions/19071512/socket-error-errno-48-address-already-in-use
+    #$ ps -fA | grep python
     app = tornado.httpserver.HTTPServer(Application())
     app.listen(options.port)
     print "Listening on port:", options.port
 
 
-    sp = serialProcess.SerialProcess(taskQ, resultQ)
-    sp.daemon = True
-    sp.start()
+
 
 
 
     #tornado.ioloop.IOLoop.instance().start()
 
+    def checkSerPort():
+        global last_valid_ser
+        spx = d_ser.SerialProcess
+        if m.ser_stat == 0:
+            try:
+                spx = d_ser.SerialProcess(taskQ, resultQ)
+                spx.daemon = True
+                spx.start()
+                m.ser_stat=1
+            except:
+                print "Error opening port"
+                print traceback.print_exc()
+        elif m.ser_stat == 1:
+            taskQ.put("<HS_1234_SH>")
 
+            c = datetime.datetime.now() - last_valid_ser
+
+            print "Healthy Port " + str(c.total_seconds())
+            if (c.total_seconds() > 10):
+                print "TRYING TO RESTART"
+                spx.daemon = False
+                del spx
+                m.ser_stat = 0
+
+        elif m.ser_stat == 2:
+            print "Error in port"
 
     def checkResults():
+        global last_valid_ser
+        if m.ser_stat != 1:
+            return
         if not resultQ.empty():
             result = resultQ.get()
             print "tornado received from arduino: " + result
@@ -232,6 +266,10 @@ def main():
                 if (em[0]=='<T1'):
                     send2all (json.dumps({'id': 'T2','T':em[1],'H':em[2]}))
                     read_all(em[1])
+                    last_valid_ser =datetime.datetime.now()
+                elif(em[0]=='<HX'):
+                    print "MY BOARD IS A L I V V V V V V V E"
+                    last_valid_ser =datetime.datetime.now()
 
             else:
                 print( "NOT PROPER " + result )
@@ -241,7 +279,9 @@ def main():
  
     mainLoop = tornado.ioloop.IOLoop.instance()
     scheduler = tornado.ioloop.PeriodicCallback(checkResults, 10, io_loop = mainLoop)
+    scheduler2 = tornado.ioloop.PeriodicCallback(checkSerPort,  5000, io_loop = mainLoop)
     scheduler.start()
+    scheduler2.start()
     mainLoop.start()
  
 if __name__ == "__main__":

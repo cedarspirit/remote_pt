@@ -5,11 +5,11 @@ import multiprocessing
  
 class SerialProcess(multiprocessing.Process):
  
-    def __init__(self, serPort, taskQ, resultQ):
+    def __init__(self, taskQ, resultQ):
         multiprocessing.Process.__init__(self)
         self.taskQ = taskQ
         self.resultQ = resultQ
-        self.usbPort = serPort # '/dev/ttyUSB0'
+        self.usbPort = '/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AH01KPXH-if00-port0'
         self.sp = serial.Serial(self.usbPort, 9600, timeout=1)
  
     def close(self):
@@ -36,7 +36,9 @@ class SerialProcess(multiprocessing.Process):
  
             # look for incoming serial data
             if (self.sp.inWaiting() > 0):
-            	#result = self.sp.readline().replace("\n", "")
-                result = self.sp.readline()
+            	result = self.sp.readline().replace("\n", "")
+                #result = self.sp.readline()
                 # send it back to tornado
-            	self.resultQ.put(result)
+                if result != '':
+                    print "Getting from local arduino: " + result
+                    self.resultQ.put(result)

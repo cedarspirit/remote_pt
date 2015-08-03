@@ -10,8 +10,10 @@ import tornado.websocket
 import tornado.ioloop
 import tornado.gen
 import tornado.autoreload
-import serialHandler
+import serialHandler as d_ser
 import multiprocessing
+import datetime
+import sys, traceback
 
 from tornado.options import define, options
 from config import PORT_COUNT, WS_PORT, HOST_IP
@@ -32,11 +34,15 @@ connections = set()
 conn_try_count = 0
 write_try_count = 0
 
+ser_stat=0
+
 rxBuffer = ''
 
 
 LastTick = 0
 curMode = 0
+last_valid_ser =datetime.datetime.now()
+
 
 @tornado.gen.coroutine
 def loop_websocket(ws):
@@ -94,6 +100,7 @@ def connect_me():
     host = options.host
     port = options.wsport
     try:
+        print "-----> Trying to connect with server"
         time.sleep(0.001)
         tornado.ioloop.IOLoop.current().add_callback(make_websocket_connection, *(host, port ))
     except:
@@ -159,33 +166,32 @@ def reload_main():
 
 def main():
     taskQ = multiprocessing.Queue()
+
     comRcvQ = multiprocessing.Queue()
 
-    sp = serialHandler.SerialProcess('/dev/ttyUSB0',taskQ, comRcvQ)
-    sp.daemon = True
-    sp.start()
+
 
     def HeartBeat():
         global LastTick
         global curMode
         LastTick += 1
         if curMode == 2:
-            if LastTick > 3:
+            if LastTick > 5:
                 LastTick=0
                 connect_me()
         elif curMode == 1:
-            if LastTick > 3: #it has been a while communicating => Send HELLO
+            if LastTick > 5: #it has been a while communicating => Send HELLO
                 curMode = 3
                 LastTick = 0
                 sendHello()
         elif curMode == 3:
-            if LastTick > 3:
+            if LastTick > 5:
                 closeConnection()
                 curMode = 2
 
 
 
-        print "Heart Beat " + str(curMode)
+        print "Heart Beat " + str(curMode) + '    LastTick '  + str(LastTick)
 
     def closeConnection():
         close_all_connections()
@@ -201,20 +207,52 @@ def main():
                     *(message,)
                 )
 
+    def checkSerPort():
+        global last_valid_ser
+        global ser_stat
+        spx = d_ser.SerialProcess
+        if ser_stat == 0:
+            try:
+                spx = d_ser.SerialProcess(taskQ, comRcvQ)
+                spx.daemon = True
+                spx.start()
+                ser_stat=1
+            except:
+                print "Error opening port"
+                print traceback.print_exc()
+        elif ser_stat == 1:
+            taskQ.put("<HS_1234_SH>")
+
+            c = datetime.datetime.now() - last_valid_ser
+
+            print "Healthy Port " + str(c.total_seconds())
+            if (c.total_seconds() > 20):
+                print "TRYING TO RESTART"
+                spx.daemon = False
+                del spx
+                ser_stat = 0
+
+        elif ser_stat == 2:
+            print "Error in port"
+
     def checkComRcvQ():
         global rxBuffer
+        global last_valid_ser
         if not comRcvQ.empty():
             result = rxBuffer + comRcvQ.get()
-            #print "tornado received from arduino: " + result
+            print "tornado received from arduino: " + result
 
-            rx = result.split('\r\n' )
+            rx = result.split('\r' )
             rxBuffer = rx[-1]
             rx.pop() # remove last element
             for n in range(0, len(rx)):
                 if rx[n]=='<X0>':
-                    sp.taskQ.put("<Y" + str(curMode) +">\n")
+                    taskQ.put("<Y" + str(curMode) +">\n")
+                    last_valid_ser =datetime.datetime.now()
+                    print "***********STAMPING "  + str(last_valid_ser)
                 elif rx[n][0:4]=='<X1_':
                     pt=rx[n].split('_')
+                    last_valid_ser =datetime.datetime.now()
                     message = json.dumps({'id': 'C1', 'x': pt[1], 'y': pt[2]})
                     starting = time.time()
                     for i, ws in enumerate(connections):
@@ -252,6 +290,8 @@ def main():
     scheduler = tornado.ioloop.PeriodicCallback(checkComRcvQ, 10, io_loop = mainLoop)
     scheduler.start()
 
+    scheduler3 = tornado.ioloop.PeriodicCallback(checkSerPort,  5000, io_loop = mainLoop)
+    scheduler3.start()
 
     HeartBeatLoop = tornado.ioloop.IOLoop.instance()
     scheduler2 = tornado.ioloop.PeriodicCallback(HeartBeat, 2000, io_loop = HeartBeatLoop)

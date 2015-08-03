@@ -5,7 +5,7 @@
 
       var circle;
       var layer;
-      var myIp = "192.168.31.134:8080";
+      var myIp = "192.168.31.135:8080";
       var socket = new WebSocket("ws://" + myIp +"/ws");
 
       socket.onopen = function(){
