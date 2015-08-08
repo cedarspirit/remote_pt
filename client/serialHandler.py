@@ -9,7 +9,13 @@ class SerialProcess(multiprocessing.Process):
         multiprocessing.Process.__init__(self)
         self.taskQ = taskQ
         self.resultQ = resultQ
-        self.usbPort = '/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AH01KPXH-if00-port0'
+        #self.usbPort = '/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AH01KPXH-if00-port0'
+        self.usbPort = '/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A603AQND-if00-port0'
+
+
+
+
+
         self.sp = serial.Serial(self.usbPort, 9600, timeout=1)
  
     def close(self):
@@ -32,7 +38,7 @@ class SerialProcess(multiprocessing.Process):
  
                 # send it to the arduino
                 self.sp.write(task + "\n");
-                print "sending to local arduino: " + task
+                #~print "sending to local arduino: " + task
  
             # look for incoming serial data
             if (self.sp.inWaiting() > 0):

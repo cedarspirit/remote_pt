@@ -32,8 +32,19 @@ clients = []
 taskQ = multiprocessing.Queue()
 #resultQ = multiprocessing.Queue()
 
-XFACT = 600.00/1020.00
-YFACT = 400.00/1020.00
+XFACT = 1 # 600.00/1020.00
+YFACT = 1 # 400.00/1020.00
+
+posPan = 0
+posTilt = 0
+posPanMax = 0
+posPanMin = 0
+posTiltMax = 0
+posTiltMin = 0
+
+
+
+
 
 last_valid_ser =datetime.datetime.now()
 
@@ -56,9 +67,11 @@ class WSHandler(tornado.websocket.WebSocketHandler):
         print 'new connection'
         clients.append(self)
         self.write_message("connected")
+        sendPos()
 
     def on_message(self, message):
-        #print 'tornado received from UI controller: %s' % message
+        global posPan, posTilt , posPanMax, posPanMin , posTiltMax , posTiltMin
+        print '============tornado received from UI controller: %s' % message
 
         try:
             cm = json.loads(message)
@@ -72,12 +85,16 @@ class WSHandler(tornado.websocket.WebSocketHandler):
                 q = self.application.settings.get('queueZ')
                 ###q.put("<A1_" + cm['x']  +'_' + cm['y'] + "_>\n")
 
-                q.put("<A1_" + str(int(cm['x']) * 4 ) +'_' + cm['y'] + "_>\n")
+                q.put("<A1_" + str(int(cm['x'])  ) +'_' + cm['y'] + "_>\n")
+                posPan = cm['x']
+                posTilt = cm['y']
                 print 'rcvd PT Message : x=' + cm['x'] + ' y=' + cm['y']
                 #send2all (json.dumps({'id': 'Z3','x':str(int(cm['x']) * XFACT),'y':str(int(cm['y']) * YFACT)  }))
                 send2all (json.dumps({'id': 'Z3','x':unicode(str(int(cm['x']) * XFACT), "utf-8"),'y':unicode(str(int(cm['y']) * YFACT), "utf-8")  }))
+            elif cm['id']=='GS': # clinet is asking for status
+                sendPos()
 
-            if cm['id']=='D1': #Hello
+            elif cm['id']=='D1': #Hello
                 send2all (json.dumps({'id': 'Z3','x':cm['x'],'y':cm['y']}))
                 print '======================================'
                 #self.write_message(json.dumps({'id': 'S0'}))
@@ -114,6 +131,7 @@ class WSH(tornado.websocket.WebSocketHandler):
             q = self.application.settings.get('queueZ')
            # q.put(message)
             q.put("<A1_" + cm['x']  +'_' + cm['y'] + "_>\n")
+
         if cm['id']=='D1': #Hello
             send2all (json.dumps({'id': 'D2','x': cm['x'],'y':cm['y']}))
             print '======================================'
@@ -128,6 +146,11 @@ class WSH(tornado.websocket.WebSocketHandler):
         print 'connection closed'
         clients.remove(self)
 
+
+def sendPos():
+    global posPan, posTilt , posPanMax, posPanMin , posTiltMax , posTiltMin
+    #send2all (json.dumps({'id': 'Z5','x':unicode(str(int(posPan)), "utf-8"),'y':unicode(str(posTilt , "utf-8")  }))
+    send2all (json.dumps({'id': 'Z5',	'x':unicode(str(posPan), "utf-8"),	'y':unicode(str(posTilt) , "utf-8"),	'xmin':unicode(str(posPanMin), "utf-8"),	'xmax':unicode(str(posPanMax) , "utf-8"),	'ymin':unicode(str(posTiltMin), "utf-8"),	'ymax':unicode(str(posTiltMax) , "utf-8")	}	))
 
 def send2all(jsonmsg):
     for c in clients:
@@ -235,6 +258,7 @@ def main():
                 spx.daemon = True
                 spx.start()
                 m.ser_stat=1
+                taskQ.put("<ST_1234_TS>")  # request status
             except:
                 print "Error opening port"
                 print traceback.print_exc()
@@ -255,6 +279,8 @@ def main():
 
     def checkResults():
         global last_valid_ser
+        global posPan, posTilt , posPanMax, posPanMin , posTiltMax , posTiltMin
+
         if m.ser_stat != 1:
             return
         if not resultQ.empty():
@@ -267,6 +293,14 @@ def main():
                     send2all (json.dumps({'id': 'T2','T':em[1],'H':em[2]}))
                     read_all(em[1])
                     last_valid_ser =datetime.datetime.now()
+                elif(em[0]=='<SZ'):  # Arduino sending position and limits
+                    posPan = em[1]
+                    posTilt = em[2]
+                    posPanMin = em[3]
+                    posPanMax= em[4]
+                    posTiltMin= em[5]
+                    posTiltMax= em[6]
+                    sendPos()
                 elif(em[0]=='<HX'):
                     print "MY BOARD IS A L I V V V V V V V E"
                     last_valid_ser =datetime.datetime.now()

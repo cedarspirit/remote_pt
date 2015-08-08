@@ -1,0 +1,93 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+      <head>
+        <title>{% block title %}Default title {{myPort}} {% end %}</title>
+      </head>
+    <link rel="stylesheet" type="text/css" href="/static/theme.css">
+    <style>
+      body { margin: 0px; padding: 0px; }
+      canvas { border: 1px solid #9C9898; }
+
+
+
+
+    </style>
+    <script src="http://d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v4.6.0.min.js"></script>
+    <script src="http://code.jquery.com/jquery-2.0.0.js"></script>
+    <script type="text/javascript" src="/static/RGraph.common.core.js" ></script>
+    <script type="text/javascript" src="/static/RGraph.thermometer.js" ></script>
+    <script src="/static/jquery.fittext.js"></script>
+      <script src="/static/server.js"></script>
+
+  </head>
+
+      <script type="application/javascript">
+        get_ip("{{myPort}}");
+    </script>
+
+
+  <body>
+
+
+<div class="super_block">
+
+    <div class="header">
+        <a href="/logout">Deconnexion</a>
+    </div>
+
+    <div class="topinfo">
+        <h2>Environment Control {{myPort}}</h2>
+        <label id="conn_text"></label><br />
+    </div>
+
+
+
+
+    <div class="temp_block">
+
+            <div class="temp_panel">
+                <div id="temp_text">
+                    <label class="temp_label" id="temp1_label">HOME</label><br />
+                    <label class="temp_value" id="temp1_value"></label><br />
+                </div>
+                <div class="temp_bar" >
+                    <canvas id="cvs_E"  width="100" height="200">[No canvas support]</canvas>
+                </div>
+            </div>
+
+
+
+
+
+        <div  class="temp_panel" margin-left="0px" id="box2">
+            <div id="temp_text">
+                <label class="temp_label" id="temp2_label">CPU</label><br />
+                <label class="temp_value" id="temp2_value"></label><br />
+            </div>
+            <div class="temp_bar" >
+                <canvas id="cvs_CPU" width="100" height="200">[No canvas support]</canvas>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+</div>
+
+
+
+
+
+    <div style="margin:10px">
+      <input type="text" id="msg" style="background:#fff;width:200px"/>
+      <input type="button" id="thebutton" value="Send" />
+    </div>
+
+
+
+    <div id="container" class="mystage" ></div>
+  </body>
+</html>

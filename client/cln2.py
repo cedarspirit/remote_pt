@@ -18,6 +18,16 @@ import sys, traceback
 from tornado.options import define, options
 from config import PORT_COUNT, WS_PORT, HOST_IP
 
+
+posPan = 0
+posTilt = 0
+posPanMax = 0
+posPanMin = 0
+posTiltMax = 0
+posTiltMin = 0
+
+
+
 # LOG_FILENAME = 'example.log'
 #logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
 #logging.debug('This message should go to the log file')
@@ -43,9 +53,11 @@ LastTick = 0
 curMode = 0
 last_valid_ser =datetime.datetime.now()
 
+taskQ = multiprocessing.Queue()
 
 @tornado.gen.coroutine
 def loop_websocket(ws):
+    global posPan, posTilt , posPanMax, posPanMin , posTiltMax , posTiltMin
     global write_try_count
     global curMode
     global LastTick
@@ -63,9 +75,23 @@ def loop_websocket(ws):
             LastTick = 0
             if curMode != 1:
                 curMode = 1
+                send2all(json.dumps({'id': 'GS'}))
+
             logging.info("on_message (%d): " % (len(data),))
-            print ("on_message (%d): " % (len(data),))
+            #~print ("on_message (%d): " % (len(data),))
+
             print (data)
+
+            try:
+                cm = json.loads(data)
+                if cm['id'] == 'Z5':  # current x pantilt position
+                    taskQ.put("<Z5_" + cm['x'] + "_" + cm['y'] + "_" + cm['xmin'] + "_" + cm['xmax'] + "_" + cm['ymin']  + "_" + cm['ymax']+ "_5Z>")
+
+            except:
+                print "XXX UNABBLE TO DECODE JSON XXXX"
+
+
+
 
 
 @tornado.gen.coroutine
@@ -164,8 +190,19 @@ def reload_main():
     logging.warn("Reload...")
     logging.warn("")
 
+
+def send2all(message):
+    for i, ws in enumerate(connections):
+        while write_try_count > 100:
+            time.sleep(0.001)
+        tornado.ioloop.IOLoop.current().add_callback\
+            (
+                ws.write_message,
+                *(message,)
+            )
+
 def main():
-    taskQ = multiprocessing.Queue()
+
 
     comRcvQ = multiprocessing.Queue()
 
@@ -191,7 +228,7 @@ def main():
 
 
 
-        print "Heart Beat " + str(curMode) + '    LastTick '  + str(LastTick)
+        #~print "Heart Beat " + str(curMode) + '    LastTick '  + str(LastTick)
 
     def closeConnection():
         close_all_connections()
@@ -217,6 +254,7 @@ def main():
                 spx.daemon = True
                 spx.start()
                 ser_stat=1
+                send2all(json.dumps({'id': 'GS'}))
             except:
                 print "Error opening port"
                 print traceback.print_exc()
@@ -225,7 +263,7 @@ def main():
 
             c = datetime.datetime.now() - last_valid_ser
 
-            print "Healthy Port " + str(c.total_seconds())
+            #~print "Healthy Port " + str(c.total_seconds())
             if (c.total_seconds() > 20):
                 print "TRYING TO RESTART"
                 spx.daemon = False
@@ -240,7 +278,7 @@ def main():
         global last_valid_ser
         if not comRcvQ.empty():
             result = rxBuffer + comRcvQ.get()
-            print "tornado received from arduino: " + result
+            #~print "tornado received from arduino: " + result
 
             rx = result.split('\r' )
             rxBuffer = rx[-1]
@@ -249,24 +287,15 @@ def main():
                 if rx[n]=='<X0>':
                     taskQ.put("<Y" + str(curMode) +">\n")
                     last_valid_ser =datetime.datetime.now()
-                    print "***********STAMPING "  + str(last_valid_ser)
+                   # print "***********STAMPING "  + str(last_valid_ser)
+                elif rx[n][0:4]=='<ZZ_':
+                    send2all(json.dumps({'id': 'GS'}))
                 elif rx[n][0:4]=='<X1_':
                     pt=rx[n].split('_')
                     last_valid_ser =datetime.datetime.now()
                     message = json.dumps({'id': 'C1', 'x': pt[1], 'y': pt[2]})
                     starting = time.time()
-                    for i, ws in enumerate(connections):
-                        while write_try_count > 100:
-                            time.sleep(0.001)
-                        tornado.ioloop.IOLoop.current().add_callback\
-                            (
-                                ws.write_message,
-                                *(message,)
-                            )
-
-                ###print "ZZZ " + rx[n]
-
-            # logging.warn("Sent to %d connections (%d bytes)" % (len(connections), len(connections) * len(message)))
+                    send2all(message)
 
 
 

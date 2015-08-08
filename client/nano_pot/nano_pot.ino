@@ -128,7 +128,7 @@ void serialEvent() {
     // if the incoming character is a newline, set a flag
     // so the main loop can do something about it:
     if (inChar == '\n') {
-      Serial.print(inputString);
+      //Serial.print(inputString);
       stringComplete = true;
     }
   }

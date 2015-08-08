@@ -1,0 +1,106 @@
+* {
+    margin: 0px;
+    padding: 0px;
+}
+
+.super_block {
+    width: 720px;
+    margin :auto;
+
+}
+.topinfo{
+    width:710px;
+    background-color:#0099CC;
+    margin-bottom:5px;
+    text-align: center;
+}
+.temp_block{
+    width:710px;
+    height:263px;
+    background-color: #4DB8DB;
+    position: relative;
+}
+
+.temp_panel{
+    float:left;
+    overflow:hidden; /* http://www.dynamicdrive.com/dynamicindex4/stepcarousel_suppliment.htm */
+    width:345px;
+    height:300px;
+    max-height:250px;
+
+    background-color: #A6DCED;
+    margin: 5px;
+    position:relative;
+
+
+}
+/* https://www.youtube.com/watch?v=xara4Z1b18I */
+#cam_block{
+    clear:left;
+}
+
+
+
+.temp_bar{
+    background-color:#A6DCED;
+    float:left;
+    width:100px;
+    height:200px;
+    left:70px;
+    top:10px;
+    position:relative;
+    /*bottom:80px;*/
+
+}
+#temp_text{
+    position:relative;
+    left:25px;
+    right:10px;
+    width:100px;
+    height:100px;
+    background-color:white;
+    top:60px;
+    float:left;
+    display: inline-block;
+
+
+}
+.temp_label{
+    position:relative;
+
+    min-width:90px;
+    /*height:30px;*/
+    background-color:#EBAD99;
+    display: inline-block;
+    text-align: center;
+    font-family:Sans-serif;
+    width:100%;
+    bottom:2px;
+    vertical-align:middle;
+ /*   margin-top=5px;  */
+
+}
+.temp_subpanel{
+    background-color:blue ;
+    position: static;
+}
+
+.mystage{
+     background-color:#A6DCED;
+     left: 100px;
+     width:600px;
+     height:400px;
+    position:relative;
+}
+
+.temp_value{
+    position:relative;
+    display: inline-block;
+    text-align: center;
+    font-family:Sans-serif;
+    color:#CC3300;
+    width:100%;
+    top:15px;
+    font-size:38px;
+
+}
