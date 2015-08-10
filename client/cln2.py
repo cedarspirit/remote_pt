@@ -86,6 +86,9 @@ def loop_websocket(ws):
                 cm = json.loads(data)
                 if cm['id'] == 'Z5':  # current x pantilt position
                     taskQ.put("<Z5_" + cm['x'] + "_" + cm['y'] + "_" + cm['xmin'] + "_" + cm['xmax'] + "_" + cm['ymin']  + "_" + cm['ymax']+ "_5Z>")
+                elif cm['id'] == 'Z3':
+                    if cm['sender'] <> '1':
+                        taskQ.put("<Z3_" + cm['x'] + "_" + cm['y'] + "_3Z>")
 
             except:
                 print "XXX UNABBLE TO DECODE JSON XXXX"
@@ -293,7 +296,7 @@ def main():
                 elif rx[n][0:4]=='<X1_':
                     pt=rx[n].split('_')
                     last_valid_ser =datetime.datetime.now()
-                    message = json.dumps({'id': 'C1', 'x': pt[1], 'y': pt[2]})
+                    message = json.dumps({'id': 'C1', 'x': pt[1], 'y': pt[2],'sender':'1'})  # TODO sender value should be coming from arduino
                     starting = time.time()
                     send2all(message)
 

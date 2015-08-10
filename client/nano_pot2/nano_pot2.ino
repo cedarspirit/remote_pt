@@ -186,9 +186,16 @@ void loop() {
             maxTilt = inputString.substring(p1+1,p2).toInt(); // maxy
 
             cfgRcvd = true;
-            
-            
                                 
+          }
+         else if (inputString.startsWith("<Z3_"))  
+          {
+            int p1 = inputString.indexOf('_', 4);
+            int p2 = inputString.indexOf('_', p1+1);
+            encoder0Pos = inputString.substring(4,p1).toInt();
+            encoder1Pos = inputString.substring(p1+1,p2).toInt();    
+            cfgRcvd = true;
+
           }
          
         //Serial.println(inputString);

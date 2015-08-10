@@ -66,7 +66,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):
     def open(self):
         print 'new connection'
         clients.append(self)
-        self.write_message("connected")
+       ### self.write_message("connected")
         sendPos()
 
     def on_message(self, message):
@@ -90,7 +90,8 @@ class WSHandler(tornado.websocket.WebSocketHandler):
                 posTilt = cm['y']
                 print 'rcvd PT Message : x=' + cm['x'] + ' y=' + cm['y']
                 #send2all (json.dumps({'id': 'Z3','x':str(int(cm['x']) * XFACT),'y':str(int(cm['y']) * YFACT)  }))
-                send2all (json.dumps({'id': 'Z3','x':unicode(str(int(cm['x']) * XFACT), "utf-8"),'y':unicode(str(int(cm['y']) * YFACT), "utf-8")  }))
+                #send2all (json.dumps({'id': 'Z3','x':unicode(str(int(cm['x']) * XFACT), "utf-8"),'y':unicode(str(int(cm['y']) * YFACT), "utf-8")  }))
+                send2all (json.dumps({'id': 'Z3','x':unicode(str(int(cm['x']) * XFACT), "utf-8"),'y':unicode(str(int(cm['y']) * YFACT), "utf-8"),'sender':cm['sender'] }))
             elif cm['id']=='GS': # clinet is asking for status
                 sendPos()
 
