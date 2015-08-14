@@ -34,6 +34,7 @@ const int ledPin =  13;      // the number of the LED pin
 int ledState = LOW;    
 
 int opMode = 0;
+int stopMode = 0;
 
 String inputString = "";         // a string to hold incoming data
 boolean stringComplete = false;  // whether the string is complete
@@ -101,9 +102,12 @@ void goPan(int pos)
   {
     int y;
     y=pos;
-    if (y<PAN_MIN) {y=PAN_MIN;}
-    if (y>PAN_MAX) {y=PAN_MAX;}
 
+    if (opMode != 2)
+      {
+        if (y<PAN_MIN) {y=PAN_MIN;}
+        if (y>PAN_MAX) {y=PAN_MAX;}
+      }
     stepper1.moveTo(y); // 4096 steps for 1 rotation in 28BYJ-48 – 5V Stepper Motor
     targetX = y;
   }
@@ -113,8 +117,11 @@ void goTilt(int pos)
   {
     int y;
     y=pos;
-    if (y<TILT_MIN) {y=TILT_MIN;}
-    if (y>TILT_MAX) {y=TILT_MAX;}      
+    if (opMode != 2)
+      {
+        if (y<TILT_MIN) {y=TILT_MIN;}
+        if (y>TILT_MAX) {y=TILT_MAX;}      
+      }
     stepper2.moveTo(y); // 4096 steps for 1 rotation in 28BYJ-48 – 5V Stepper Motor
     targetY = y;
   }
@@ -173,31 +180,8 @@ void loop() {
   tickSer();
   tick();
   heartbeat();
+  StopHandler();
   
-  // Update the Bounce instance :
-  debouncer.update();
-
-  // Get the updated value :
-  int value = debouncer.read();
-
-  // Turn on or off the LED as determined by the state :
-  if ( value == LOW ) {
-    //digitalWrite(LED_PIN, HIGH );
-  
-    
-    stepper1.setCurrentPosition(0);
-    stepper1.move(50);
-    stepper2.setCurrentPosition(0);
-    stepper2.move(50);
-  
-   // opMode=0; // TESTING
-   // readtemp();
-   // stepper1.disableOutputs();
-   // stepper1.stop();
-  } 
-  else {
-    //digitalWrite(LED_PIN, LOW );
-  }
 
 
 
@@ -213,13 +197,71 @@ void loop() {
 
      if ((stepper2.distanceToGo() == 0) && (stepper1.distanceToGo() == 0) )
      {
-        readtemp();
+        if (opMode == 3)
+          {
+            sendStatus();
+            opMode = 1;
+          }
+        else if (opMode == 4)
+          {
+            sendStatus();
+            opMode = 1;
+          }
+        else if (opMode == 1)
+          {
+              readtemp();
+          }
      }
      
 
       stepper1.run();        // run the stepper to the destined position
       stepper2.run();        // run the stepper to the destined position
     
+}
+
+//---------------------------------------------------------------------------------
+void StopHandler()
+{
+  // Update the Bounce instance :
+  debouncer.update();
+  // Get the updated value :
+  int value = debouncer.read();
+
+  // Turn on or off the LED as determined by the state :
+  if ( value == LOW ) 
+    {
+      if (stopMode == 0)
+        {
+          stopMode = 1;
+          stepper1.setCurrentPosition(0);
+          stepper2.setCurrentPosition(0);    
+          if (opMode == 2)
+            {
+              goTilt(TILT_DEFAULT);
+              goPan(PAN_DEFAULT);               
+              opMode = 3;
+            }   
+          else if (opMode ==1)
+            {
+              stepper1.move(PAN_MIN);
+              stepper2.move(TILT_MIN);  
+              opMode = 4;      
+            }
+        }
+     else if (stopMode == 1)
+        {
+          
+        }
+    }
+  else
+    {
+      if (stopMode == 1)
+        {
+          stopMode = 0;
+        }
+    }
+    
+  
 }
 
 //---------------------------------------------------------------------------------
@@ -245,7 +287,11 @@ void processIncomingMsg()  // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 {
        if (inputString.startsWith("<A1_"))      
           {
-            opMode=1;
+            if (opMode == 0) 
+              {
+                  opMode=1;  
+              }
+              
             triggerBeat();
             int p1 = inputString.indexOf('_', 4);
             int p2 = inputString.indexOf('_', p1+1);
@@ -258,11 +304,19 @@ void processIncomingMsg()  // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
           }
       else if (inputString.startsWith("<HS_"))  //hello message 
           {
-            opMode=1;
+            if (opMode == 0) 
+              {
+                  opMode=1;  
+              }
             triggerBeat();
             Serial.println("<HX_1234_XH>");  
           }
-
+      else if (inputString.startsWith("<ZZ_"))  //calibrate mode
+          {
+           
+            triggerBeat();
+            calibrate(); 
+          }
       else if (inputString.startsWith("<ST_"))  //request status
             {
                 sendStatus();  //reply with <SZ_
@@ -300,7 +354,7 @@ void sendStatus() {
 void readtemp()
 {
 
-  if (opMode == 0)
+  if (opMode != 1)
     return;
   
   if(currentMillis - previousMillisT > 2000) {
@@ -373,5 +427,10 @@ int tick()
     digitalWrite(ledPin, ledState);
   }
 }
-  
 
+void calibrate() {
+ opMode=2;  //calibrate mode
+ goPan(-1000);  
+ goTilt(-1000);
+ 
+}

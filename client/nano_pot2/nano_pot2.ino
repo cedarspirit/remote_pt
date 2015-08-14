@@ -5,10 +5,10 @@
 http://www.forward.com.au/pfod/ArduinoProgramming/DebouncedSwitch/DebouncedSwitch.html
  This example code is in the public domain.
  */
+//#include <DebouncedSwitch.h>
 
-//////#include <DebouncedSwitch.h>
-//////int D4 = 4; // give the pin a name
-/////DebouncedSwitch sw(D4); // monitor a switch on input D4
+//int BTN_CALIBRATE = 7; 
+//DebouncedSwitch swCalibrate(BTN_CALIBRATE); // monitor a switch on input D4
  
 const int ledPin =  13;      // the number of the LED pin
 int outPin = 13;       // the number of the output pin
@@ -38,6 +38,15 @@ long debounce = 50;   // the debounce time, increase if the output flickers
 #define encoder1PinA  3
 #define encoder1PinB  5
 
+// *** CALIBRATE RELATED
+int BTN_CALIBRATE = 7; 
+boolean  btnClb_StateCur = HIGH;             // the current reading from the input pin
+boolean  btnClb_StateLast = HIGH;   // the previous reading from the input pin
+boolean  btnClb_StateDebounce = HIGH;   // the previous reading from the input pin
+unsigned long btnClb_lastDebounceTime = 0;  // the last time the output pin was toggled   // the following variables are long's because the time, measured in miliseconds,
+unsigned long btnClb_debounceDelay = 50;    // the debounce time; increase if the output flickers    // will quickly become a bigger number than can be stored in an int.
+// *** CALIBRATE RELATED
+
 
 
 volatile int encoder0Pos = 0;
@@ -54,6 +63,9 @@ volatile int maxTilt = 0;
 #define STEP_LRG 200
 
 volatile int xFactor = STEP_MED;
+
+
+int lastState_Calibrate = HIGH; 
 
 // Variables will change:
 int ledState = LOW;    
@@ -78,6 +90,11 @@ void setup() {
       pinMode(inPin, INPUT);
       digitalWrite(inPin, HIGH);   // turn on the built in pull-up resistor
 
+      pinMode(BTN_CALIBRATE, INPUT);
+      digitalWrite(BTN_CALIBRATE, HIGH);   // turn on the built in pull-up resistor
+    
+      lastState_Calibrate = HIGH;
+    
       pinMode(pin_test, OUTPUT);
       
       pinMode(outPin, OUTPUT);
@@ -120,8 +137,9 @@ void loop() {
   
   tick();
   tickSer();
+  tickCalibrateCheck2();
   detectMultiplier();
-  digitalWrite(pin_test, state);
+  
   
   boolean potChange = false;
   if (abs(encoder0Pos-LastValX) > 0)
@@ -444,4 +462,35 @@ void blink()
   } 
 
 }
+
+
+
+void tickCalibrateCheck2()
+{
+  
+  btnClb_StateCur = digitalRead(BTN_CALIBRATE);
+  unsigned long currentTime = millis();
+
+  if (btnClb_StateCur != btnClb_StateLast){
+    btnClb_lastDebounceTime = currentTime;
+  }
+  
+  if (currentTime - btnClb_lastDebounceTime > btnClb_debounceDelay){//if enough time has passed
+    if (btnClb_StateCur != btnClb_StateDebounce){//if the current state is still different than our last stored debounced state
+      btnClb_StateDebounce = btnClb_StateCur;//update the debounced state
+      
+      //trigger an event
+      if (btnClb_StateDebounce == HIGH){
+        //Serial.println("released");
+      } else {
+        //Serial.println("pressed");
+        Serial.println(String("<ZZ>"));
+      }
+    }
+  }
+  
+  btnClb_StateLast = btnClb_StateCur;
+}
+
+
 

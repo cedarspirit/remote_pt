@@ -26,7 +26,7 @@ posPanMin = 0
 posTiltMax = 0
 posTiltMin = 0
 
-
+cid = ''  # My  ID sent from server in AA jSON
 
 # LOG_FILENAME = 'example.log'
 #logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
@@ -58,6 +58,7 @@ taskQ = multiprocessing.Queue()
 @tornado.gen.coroutine
 def loop_websocket(ws):
     global posPan, posTilt , posPanMax, posPanMin , posTiltMax , posTiltMin
+    global cid
     global write_try_count
     global curMode
     global LastTick
@@ -87,8 +88,10 @@ def loop_websocket(ws):
                 if cm['id'] == 'Z5':  # current x pantilt position
                     taskQ.put("<Z5_" + cm['x'] + "_" + cm['y'] + "_" + cm['xmin'] + "_" + cm['xmax'] + "_" + cm['ymin']  + "_" + cm['ymax']+ "_5Z>")
                 elif cm['id'] == 'Z3':
-                    if cm['sender'] <> '1':
+                    if cm['sender'] <> cid:
                         taskQ.put("<Z3_" + cm['x'] + "_" + cm['y'] + "_3Z>")
+                elif cm['id'] == 'AA':
+                    cid = cm['cid']
 
             except:
                 print "XXX UNABBLE TO DECODE JSON XXXX"
@@ -296,8 +299,11 @@ def main():
                 elif rx[n][0:4]=='<X1_':
                     pt=rx[n].split('_')
                     last_valid_ser =datetime.datetime.now()
-                    message = json.dumps({'id': 'C1', 'x': pt[1], 'y': pt[2],'sender':'1'})  # TODO sender value should be coming from arduino
+                    message = json.dumps({'id': 'C1', 'x': pt[1], 'y': pt[2],'sender':cid})
                     starting = time.time()
+                    send2all(message)
+                elif rx[n]=='<ZZ>':  #Calibrate requets
+                    message = json.dumps({'id': 'ZZ', 'sender':cid})
                     send2all(message)
 
 

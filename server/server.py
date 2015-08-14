@@ -18,6 +18,7 @@ import datetime
 import sys, traceback
 import rrdtool
 import mod_pubvars as m
+import uuid
 
 databaseFile = "temp1.rrd"
 MIN_TEMP = -50
@@ -65,8 +66,9 @@ class WSHandler(tornado.websocket.WebSocketHandler):
 
     def open(self):
         print 'new connection'
+        u = uuid.uuid4()
         clients.append(self)
-       ### self.write_message("connected")
+        self.write_message(json.dumps({'id': 'AA','cid': str(u)}))
         sendPos()
 
     def on_message(self, message):
@@ -94,7 +96,9 @@ class WSHandler(tornado.websocket.WebSocketHandler):
                 send2all (json.dumps({'id': 'Z3','x':unicode(str(int(cm['x']) * XFACT), "utf-8"),'y':unicode(str(int(cm['y']) * YFACT), "utf-8"),'sender':cm['sender'] }))
             elif cm['id']=='GS': # clinet is asking for status
                 sendPos()
-
+            elif cm['id'] == 'ZZ':
+                q = self.application.settings.get('queueZ')
+                q.put("<ZZ_>")
             elif cm['id']=='D1': #Hello
                 send2all (json.dumps({'id': 'Z3','x':cm['x'],'y':cm['y']}))
                 print '======================================'
@@ -114,6 +118,7 @@ class WSH(tornado.websocket.WebSocketHandler):
 
     def open(self):
         print 'new connection'
+
         clients.append(self)
         self.write_message("connected")
 
