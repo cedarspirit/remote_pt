@@ -37,22 +37,33 @@
                 switch(js.id){
                     case 'T2':
                         console.log("TEMPAREATURE >>--->> " + js.T + " HUMIDITY: " + js.H  );
-                        logger (js.T) ;
+                        logger (js.T,js.H ) ;
                         break;
                     case 'Z3':
                         console.log("PAN TILT POSITION ---> X:" + js.x + " Y: " + js.y  + " XF " + PlayFactorX );
                         moveCircle(js.x ,js.y );
                         break;
                     case 'Z5': // ' receive initial coordinate'
-
                         PlayFactorX = PLAY_WIDTH/(js.xmax-js.xmin);
                         PlayFactorY = PLAY_HEIGHT/(js.ymax-js.ymin);
                         PlayMarginX = js.xmin;
                         PlayMarginY = js.ymin;
                         moveCircle(js.x ,js.y );
                         break;
+                    case 'XZ':
+                        //http://stackoverflow.com/questions/9991805/javascript-how-to-parse-json-array
+                        console.log("PATROL =======");
+                        for (var i  = 0; i < js.patrol.length; i++) {
+                            var point = js.patrol[i];
+                            console.log(point.x + "   " + point.y + "   " + point.d );
+                            plotPatrol(point.x ,point.y );
+                        }
+
+
+                        break;
                     default :
-                        console.log("UNKNOPWN HEADER " + js.id )
+                        console.log("UNKNOPWN HEADER " + js.id );
+
                         break;
                 }
             }
@@ -85,6 +96,9 @@
 
 
 
+
+        layerPatrol  = new Kinetic.Layer();
+         // layerPatrol.hide();
         layer  = new Kinetic.Layer();
 
         circle = new Kinetic.Circle({
@@ -106,6 +120,8 @@
         });
 
         layer.add(circle);
+
+        stage.add(layerPatrol);
         stage.add(layer);
 
         enableStageClick();
@@ -148,14 +164,31 @@
           layer.draw();
       }
 
-        var logger = function(msg){
+function plotPatrol(px,py){
+
+        circleZ = new Kinetic.Rect({
+          x: px,
+          y: py,
+          width: 10,
+          height: 10,
+          fill: "blue",
+          stroke: "black",
+          strokeWidth: 2,
+          draggable: false
+        });
+        layerPatrol.add(circleZ);
+        layerPatrol.draw();
+
+}
+
+        var logger = function(msg,msgH){
           var now = new Date();
           var sec = now.getSeconds();
           var min = now.getMinutes();
           var hr = now.getHours();
         //  $("#log").html($("#log").html() + "<br/>" + hr + ":" + min + ":" + sec + " ___ " +  msg);
 
-            ShowTemp(msg,msg);
+            ShowTemp(msg,msgH);
           //$("#log").animate({ scrollTop: $('#log')[0].scrollHeight}, 100);
         //  $('#log').scrollTop($('#log')[0].scrollHeight);
         }
@@ -168,7 +201,7 @@
       ds18b20_reading.innerHTML = parseFloat(temp1).toFixed(2);
       cpu_reading.innerHTML = parseFloat(temp2).toFixed(2);
       drawGraph_environment(temp1);
-      drawGraph_CPU(temp2);
+      //drawGraph_CPU(temp2);
 	}
 
   function drawGraph_environment(temp1){

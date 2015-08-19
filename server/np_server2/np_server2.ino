@@ -58,10 +58,15 @@ int targetY=TILT_DEFAULT;
 
 DHT dht(DHTPIN, DHTTYPE);
 
+int patrolPoints[10][2];
+
+
+
 //---------------------------------------------------------------------------
 void setup() {
   opMode = 0;  // 0:Setup 1:Active 2:Calobration
 
+  initPatrolPoints();
   
   stepper1.setMaxSpeed(1000);    // 1000 coz....greater than 1000 is unreliable .....as told on the info page
   stepper1.setAcceleration(1000);
@@ -309,7 +314,8 @@ void processIncomingMsg()  // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                   opMode=1;  
               }
             triggerBeat();
-            Serial.println("<HX_1234_XH>");  
+            sendStatusX();
+         
           }
       else if (inputString.startsWith("<ZZ_"))  //calibrate mode
           {
@@ -345,11 +351,20 @@ void sendStatus() {
       }
    else
        {
-        Serial.println("<HX_1234_XH>");  
+        sendStatusX();
        } 
   
 }
 
+//---------------------------------------------------------------------------
+void sendStatusX() {
+  //Serial.println("<HX_1234_XH>");  
+  Serial.print("<HX_1234_o"); 
+  Serial.print(String(opMode));
+  Serial.print("_s");
+  Serial.print(String(stopMode));
+  Serial.println("XH>");  
+}
 //---------------------------------------------------------------------------
 void readtemp()
 {
@@ -434,3 +449,14 @@ void calibrate() {
  goTilt(-1000);
  
 }
+
+void initPatrolPoints()
+{
+//fill array
+for (int x=0; x<10; x++){
+ for (int y=0; y<2; y++){
+   patrolPoints[x][y] = 0;
+ }
+}  
+}
+

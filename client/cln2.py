@@ -92,7 +92,9 @@ def loop_websocket(ws):
                         taskQ.put("<Z3_" + cm['x'] + "_" + cm['y'] + "_3Z>")
                 elif cm['id'] == 'AA':
                     cid = cm['cid']
-
+                elif cm['id'] == 'XZ':
+                    #http://stackoverflow.com/questions/27315472/python-how-to-count-item-in-json-data
+                    print "Patrol  " + cm['patrol'][0]['x'] + "   >" + str(len(cm['patrol']))  #TIP
             except:
                 print "XXX UNABBLE TO DECODE JSON XXXX"
 
@@ -303,7 +305,7 @@ def main():
                     starting = time.time()
                     send2all(message)
                 elif rx[n]=='<ZZ>':  #Calibrate requets
-                    message = json.dumps({'id': 'ZZ', 'sender':cid})
+                    message = json.dumps({'id': 'ZX', 'sender':cid})   #OR TEST, use ZX instead of ZZ to start patrol mode
                     send2all(message)
 
 

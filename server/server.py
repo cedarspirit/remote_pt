@@ -60,7 +60,7 @@ class IndexHandler(BaseHandler):
         self.render('index.html', myPort='192.168.31.133')
         #self.write("index.html", usrname = 'ytr')
 
-class WSHandler(tornado.websocket.WebSocketHandler):
+class WSHandler(tornado.websocket.WebSocketHandler): #hw pot handloer
     def check_origin(self, origin):
         return True
 
@@ -99,6 +99,16 @@ class WSHandler(tornado.websocket.WebSocketHandler):
             elif cm['id'] == 'ZZ':
                 q = self.application.settings.get('queueZ')
                 q.put("<ZZ_>")
+            elif cm['id'] == 'ZX': #Patrol Mode
+                send2all (json.dumps({'id': 'XZ', 'patrol':[ \
+                    {'x':'200', 'y':'110','d':'3'}, \
+                    {'x':'250', 'y':'210','d':'3'}, \
+                    {'x':'300', 'y':'260','d':'3'}, \
+                    {'x':'350', 'y':'360','d':'3'}]}))
+
+                q = self.application.settings.get('queueZ')
+                #q.put("<ZZ_>")
+
             elif cm['id']=='D1': #Hello
                 send2all (json.dumps({'id': 'Z3','x':cm['x'],'y':cm['y']}))
                 print '======================================'
