@@ -100,6 +100,10 @@ class WSHandler(tornado.websocket.WebSocketHandler): #hw pot handloer
                 q = self.application.settings.get('queueZ')
                 q.put("<ZZ_>")
             elif cm['id'] == 'ZX': #Patrol Mode
+                ret= users.PatCfg()
+                ret.retrieve()
+                print ret.poi
+
                 send2all (json.dumps({'id': 'XZ', 'patrol':[ \
                     {'x':'200', 'y':'110','d':'3'}, \
                     {'x':'250', 'y':'210','d':'3'}, \
@@ -115,7 +119,8 @@ class WSHandler(tornado.websocket.WebSocketHandler): #hw pot handloer
                 #self.write_message(json.dumps({'id': 'S0'}))
         except:
             print 'invalid JSON message'
-
+            import traceback
+            traceback.print_exc()
 
 
     def on_close(self):
