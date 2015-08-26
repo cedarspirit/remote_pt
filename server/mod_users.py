@@ -38,7 +38,7 @@ class PatCfg(object):
         del self.poi[:]
         conn = sqlite3.connect('np_db.sqlite')
         c = conn.cursor()
-        c.execute("select * from pat_points")  #TIP http://stackoverflow.com/questions/973541/how-to-set-sqlite3-to-be-case-insensitive-when-string-comparing
+        c.execute("SELECT * FROM pat_points where X > 0 and Y >0 order by X, Y")  #TIP http://stackoverflow.com/questions/973541/how-to-set-sqlite3-to-be-case-insensitive-when-string-comparing
         #c.execute("select ID from pat_points")  #TIP http://stackoverflow.com/questions/973541/how-to-set-sqlite3-to-be-case-insensitive-when-string-comparing
         for row in c:
             X,Y,speedTo,pause,ID = row   #TIP http://stackoverflow.com/questions/12325234/python-tuple-indices-must-be-integers-not-str-when-selecting-from-mysql-table

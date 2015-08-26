@@ -99,7 +99,7 @@ class WSHandler(tornado.websocket.WebSocketHandler): #hw pot handloer
             elif cm['id'] == 'ZZ':
                 q = self.application.settings.get('queueZ')
                 q.put("<ZZ_>")
-            elif cm['id'] == 'ZX': #Patrol Mode
+            elif cm['id'] == 'ZX': #Activate Patrol Mode
                 ret= users.PatCfg()
                 ret.retrieve()
                 print ret.poi
@@ -112,6 +112,7 @@ class WSHandler(tornado.websocket.WebSocketHandler): #hw pot handloer
 
                 q = self.application.settings.get('queueZ')
                 #q.put("<ZZ_>")
+
 
             elif cm['id']=='D1': #Hello
                 send2all (json.dumps({'id': 'Z3','x':cm['x'],'y':cm['y']}))
