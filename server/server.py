@@ -19,7 +19,7 @@ import sys, traceback
 import rrdtool
 import mod_pubvars as m
 import uuid
-
+import debug_helper as dh
 databaseFile = "temp1.rrd"
 MIN_TEMP = -50
 ERROR_TEMP = -999.99
@@ -307,7 +307,7 @@ def main():
             return
         if not resultQ.empty():
             result = resultQ.get()
-            print "tornado received from arduino: " + result
+            dh.dbg ("tornado received from arduino: " + result)
 
             if (result[:1] == '<'):
                 em = result.split('_')
@@ -324,15 +324,19 @@ def main():
                     posTiltMax= em[6]
                     sendPos()
                 elif(em[0]=='<HX'):
-                    print "MY BOARD IS A L I V V V V V V V E"
+                    dh.dbg ("MY BOARD IS A L I V V V V V V V E")
                     last_valid_ser =datetime.datetime.now()
-
+                elif(em[0]=='<NF'):  # DEBUG MESSAGE
+                    dh.dbg ("=== DEBUG INFO === " + em[1])
+                    last_valid_ser =datetime.datetime.now()
             else:
                 print( "NOT PROPER " + result )
 
            # for c in clients:
            #     c.write_message(result)
- 
+
+
+
     mainLoop = tornado.ioloop.IOLoop.instance()
     scheduler = tornado.ioloop.PeriodicCallback(checkResults, 10, io_loop = mainLoop)
     scheduler2 = tornado.ioloop.PeriodicCallback(checkSerPort,  5000, io_loop = mainLoop)
@@ -342,3 +346,5 @@ def main():
  
 if __name__ == "__main__":
     main()
+
+

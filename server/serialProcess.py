@@ -2,7 +2,7 @@ import serial
 import time
 import multiprocessing
 import mod_pubvars as m
-
+import debug_helper as dh
 class SerialProcess(multiprocessing.Process):
 
     def __init__(self, taskQ, resultQ):
@@ -34,7 +34,7 @@ class SerialProcess(multiprocessing.Process):
 
                 # send it to the arduino
                 self.sp.write(task + "\n");
-                print "Serial Worker Xmit : " + task
+                dh.dbg("Serial Worker Xmit : " + task )
 
             # look for incoming serial data
             try:
