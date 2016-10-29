@@ -286,7 +286,7 @@ def main():
         global last_valid_ser
         if not comRcvQ.empty():
             result = rxBuffer + comRcvQ.get()
-            #~print "tornado received from arduino: " + result
+            print "tornado received from arduino: " + result
 
             rx = result.split('\r' )
             rxBuffer = rx[-1]

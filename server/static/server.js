@@ -12,7 +12,7 @@
 
       var circle;
       var layer;
-      var myIp = "192.168.31.134:8080";
+      var myIp = "192.168.91.144:8080";
       var socket = new WebSocket("ws://" + myIp +"/ws");
 
       socket.onopen = function(){
@@ -36,7 +36,7 @@
 
                 switch(js.id){
                     case 'T2':
-                        console.log("TEMPAREATURE >>--->> " + js.T + " HUMIDITY: " + js.H  );
+                          console.log("TEMPAREATURE >>--->> " + js.T + " HUMIDITY: " + js.H  );
                         logger (js.T,js.H ) ;
                         break;
                     case 'Z3':
@@ -128,7 +128,7 @@
 
         function enableStageClick() {
             $(stage.getContent()).on('click', function (event) {
-                var pos = stage.getMousePosition();
+                var pos = stage.getPointerPosition();
                 console.log( "SSSSSSSSX " + pos.x + " PlayFactorX =" + PlayFactorX + "  FINALX:" + parseInt(pos.x / PlayFactorX) );
                 console.log( "SSSSSSSSY " + pos.y );
                 var mouseX = parseInt(PlayMarginX) + (pos.x / PlayFactorX);

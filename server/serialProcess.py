@@ -11,7 +11,7 @@ class SerialProcess(multiprocessing.Process):
         self.resultQ = resultQ
         #https://www.raspberrypi.org/forums/viewtopic.php?f=66&t=64493
         # in command do: ls /dev/serial/by-id/   when arduino is connected
-        self.usbPort = '/dev/serial/by-id/usb-Arduino_LLC_Arduino_Leonardo-if00' #' '/dev/npboard' #'/dev/ttyUSB0' # '/dev/ttyACM0'
+        self.usbPort = '/dev/serial/by-id/usb-Arduino__www.arduino.cc__0043_64131383231351D0F042-if00' #' '/dev/npboard' #'/dev/ttyUSB0' # '/dev/ttyACM0'
         self.sp = serial.Serial(self.usbPort, 9600, timeout=1)
 
     def close(self):

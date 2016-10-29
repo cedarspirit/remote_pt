@@ -87,7 +87,7 @@ class WSHandler(tornado.websocket.WebSocketHandler): #hw pot handloer
                 q = self.application.settings.get('queueZ')
                 ###q.put("<A1_" + cm['x']  +'_' + cm['y'] + "_>\n")
 
-                q.put("<A1_" + str(int(cm['x'])  ) +'_' + cm['y'] + "_>\n")
+                q.put("<A1_" + str(int(cm['x'])  ) +'_' + cm['y'] + "_A1>\n")
                 posPan = cm['x']
                 posTilt = cm['y']
                 print 'rcvd PT Message : x=' + cm['x'] + ' y=' + cm['y']
@@ -152,7 +152,7 @@ class WSH(tornado.websocket.WebSocketHandler):
             self.write_message('got it! ' + cm['id'])
             q = self.application.settings.get('queueZ')
            # q.put(message)
-            q.put("<A1_" + cm['x']  +'_' + cm['y'] + "_>\n")
+            q.put("<A1_" + cm['x']  +'_' + cm['y'] + "_A1>\n")
 
         if cm['id']=='D1': #Hello
             send2all (json.dumps({'id': 'D2','x': cm['x'],'y':cm['y']}))

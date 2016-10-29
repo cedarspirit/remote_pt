@@ -9,8 +9,8 @@ class SerialProcess(multiprocessing.Process):
         multiprocessing.Process.__init__(self)
         self.taskQ = taskQ
         self.resultQ = resultQ
-        #self.usbPort = '/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AH01KPXH-if00-port0'
-        self.usbPort = '/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A603AQND-if00-port0'
+        self.usbPort = '/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AH01KPXH-if00-port0'
+       # self.usbPort = '/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A603AQND-if00-port0'
 
 
 
